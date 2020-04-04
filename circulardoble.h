@@ -148,9 +148,11 @@ public:
         NodoCircular *temp = first;
         int i = 1;
         do{
-            temp->find = false;
-            temp = temp->next;
-            i++;
+            if(temp != NULL){
+                temp->find = false;
+                temp = temp->next;
+                i++;
+            }
         }
         while (temp != first);
     }

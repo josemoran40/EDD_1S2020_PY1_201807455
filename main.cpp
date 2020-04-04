@@ -28,7 +28,6 @@
 #include <Winuser.h>
 #include <string.h>
 #include <ctype.h>
-#include "nodoarbol.h"
 #include "leerjson.h"
 #include "cola.h"
 #include <cstdlib>
@@ -40,8 +39,8 @@ using namespace std;
 
 ArbolBinario *arbolJugadores = new ArbolBinario();
 leerJson *json = new leerJson();
-CircularDoble *dobles = NULL;
-CircularDoble *triples = NULL;
+CircularDoble *dobles = new CircularDoble();
+CircularDoble *triples = new CircularDoble();
 CircularDiccionario *diccionario = new CircularDiccionario();
 Cola *fichas;
 Matriz *matriz = new Matriz();
@@ -83,6 +82,8 @@ void retornarFichas(Jugador *jugador);
 void reportes();
 void reporteJugador();
 void ganador();
+void menuSeleccion1();
+void menuSeleccion2();
 
 int main(int argc, char *argv[])
 {
@@ -106,11 +107,10 @@ int main(int argc, char *argv[])
     matriz->add(5,11,"i");
     matriz->add(5,12,"o");
 */
-   Jugador *nuevo = new Jugador("Jose");
     NodoArbol *nodoArbol = new NodoArbol("Jose", 1);
     arbolJugadores->agregar(nodoArbol);
-    nodoArbol = new NodoArbol("Juan", 2);
-    arbolJugadores->agregar(nodoArbol);
+    //nodoArbol = new NodoArbol("Juan", 2);
+    //arbolJugadores->agregar(nodoArbol);
     //ingresarArchivo();
     menu();
 }
@@ -118,12 +118,11 @@ int main(int argc, char *argv[])
 
 void menu(){
     matriz = new Matriz();
-    diccionario->graficar();
+    //diccionario->graficar();
     inter();
     interprincipal();
     agregarFichas();
     fichas->graficarCola();
-
     //ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\edd.png", NULL, NULL, SW_SHOWNORMAL);
     int leer;
     do{
@@ -166,7 +165,7 @@ void agregarJugador(){
         setearCursor(43,20);
         cout<<"AGREGADO!";
     }else{
-        setearCursor(40,20);
+        setearCursor(38,20);
         cout<<"EL NOMBRE YA EXISTE :(";
     }
     setearCursor(0,30);
@@ -187,13 +186,13 @@ void ingresarArchivo(){
     dobles = new CircularDoble();
     triples = new CircularDoble();
     diccionario = new CircularDiccionario();
-    /*setearCursor(40,18);
+    setearCursor(40,18);
     cout<<"INGRESA LA RUTA:";
-    setearCursor(26, 19);*/
+    setearCursor(26, 19);
     QString rutaJson;
     string ruta;
-    //cin>>ruta;
-    rutaJson = QString::fromStdString("C:\\Users\\jose_\\OneDrive\\Escritorio\\entrada.json");
+    cin>>ruta;
+    rutaJson = QString::fromStdString(ruta);
      setearCursor(0,32);
     json->jsonExample(rutaJson, dobles, triples, diccionario,dimension);
     //"C:\Users\jose_\OneDrive\Escritorio\entrada.json"
@@ -212,21 +211,32 @@ void ingresarArchivo(){
 
 void jugar(){
     if(archivo){
-        diccionario->reiniciar();
-        ingresarJugador1();
-        ingresarJugador2();
-        punteo1 = 0;
-        punteo2 = 0;
-        srand(time(0));
-        int random = rand()%1 +1;
-        if(1 == 1){
-            menuJugador1();
+        if(contadorJugadores>1){
+            diccionario->reiniciar();
+            ingresarJugador1();
+            ingresarJugador2();
+            punteo1 = 0;
+            punteo2 = 0;
+            srand(time(0));
+            int random = rand()%1 +1;
+            if(1 == 1){
+                menuJugador1();
+            }else{
+                turnoJugador2();
+            }
         }else{
-            turnoJugador2();
+            limpiarMenu();
+            setearCursor(37,22);
+            cout<<"INGRESE UN JUGADOR";
+            Sleep(600);
+            menu();
         }
     }else{
+        limpiarMenu();
         setearCursor(37,22);
         cout<<"INGRESE UN ARCHIVO";
+        Sleep(600);
+        menu();
     }
 }
 
@@ -239,7 +249,7 @@ void menuJugador1(){
     cout<<"1. INGRESAR FICHA";
     setearCursor(41, 19);
     cout<<"2. ESCOGER FICHA";
-    setearCursor(42, 20);
+    setearCursor(39, 20);
     cout<<"3. VERIFICAR PALABRA";
     setearCursor(45, 21);
     cout<<"4. SALIR";
@@ -265,8 +275,11 @@ void menuJugador1(){
             verificarMatriz(jugador1);
         break;
         case 50:
+            jugador1->fichas->graficarListaDoble();
+            ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\Juego\\listadoble.png", NULL, NULL, SW_SHOWNORMAL);
             cambiarFichas(jugador1);
-            menuJugador1();
+            menuSeleccion1();
+            menuJugador2();
         break;
         case 49:
             turnoJugador1();
@@ -283,15 +296,26 @@ void turnoJugador1(){
     Ficha *temp = ingresarFicha(jugador1);
     int x = ingresarX();
     int y = ingresarY();
-    fichasUsadas->append(temp, to_string(x), to_string(y));
     int doble = dobles->buscarDoble(x,y);
     int triple = triples->buscarTriple(x,y);
-    if(doble == 2){
-        matriz->add(x,y , temp,2);
-    }else if(triple==3){
-        matriz->add(x,y , temp,3);
+    bool buscarx = matriz->existeX(x, y);
+    bool buscary = matriz->existeY(x,y);
+    if(!buscarx && !buscary){
+        if(doble == 2){
+            matriz->add(x,y , temp,2);
+        }else if(triple==3){
+            matriz->add(x,y , temp,3);
+        }else{
+            matriz->add(x,y , temp,1);
+        }
+        fichasUsadas->append(temp, to_string(x), to_string(y));
+
     }else{
-        matriz->add(x,y , temp,1);
+        limpiarMenu();
+        jugador1->fichas->prepend(temp);
+        setearCursor(37,22);
+        cout<<"YA SE ENCUENTRA OCUPADA ESA CELDA";
+        Sleep(600);
     }
     matriz->graficar();
     ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\Juego\\matriz.png", NULL, NULL, SW_SHOWNORMAL);
@@ -402,15 +426,27 @@ void turnoJugador2(){
     Ficha *temp = ingresarFicha(jugador2);
     int x = ingresarX();
     int y = ingresarY();
-    fichasUsadas->prepend(temp, to_string(x), to_string(y));
     int doble = dobles->buscarDoble(x,y);
     int triple = triples->buscarTriple(x,y);
-    if(doble == 2){
-        matriz->add(x,y , temp,2);
-    }else if(triple==3){
-        matriz->add(x,y , temp,3);
+
+    bool buscarx = matriz->existeX(x, y);
+    bool buscary = matriz->existeY(x,y);
+    if(!buscarx && !buscary){
+        if(doble == 2){
+            matriz->add(x,y , temp,2);
+        }else if(triple==3){
+            matriz->add(x,y , temp,3);
+        }else{
+            matriz->add(x,y , temp,1);
+        }
+        fichasUsadas->append(temp, to_string(x), to_string(y));
+
     }else{
-        matriz->add(x,y , temp,1);
+        limpiarMenu();
+        jugador2->fichas->prepend(temp);
+        setearCursor(37,22);
+        cout<<"YA SE ENCUENTRA OCUPADA ESA CELDA";
+        Sleep(600);
     }
     matriz->graficar();
     ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\Juego\\matriz.png", NULL, NULL, SW_SHOWNORMAL);
@@ -426,7 +462,7 @@ void menuJugador2(){
     cout<<"1. INGRESAR FICHA";
     setearCursor(41, 19);
     cout<<"2. ESCOGER FICHA";
-    setearCursor(42, 20);
+    setearCursor(39, 20);
     cout<<"3. VERIFICAR PALABRA";
     setearCursor(45, 21);
     cout<<"4. SALIR";
@@ -452,8 +488,11 @@ void menuJugador2(){
         verificarMatriz(jugador2);
     break;
     case 50:
+        jugador2->fichas->graficarListaDoble();
+        ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\Juego\\listadoble.png", NULL, NULL, SW_SHOWNORMAL);
         cambiarFichas(jugador2);
-        menuJugador2();
+        menuSeleccion2();
+        menuJugador1();
     break;
     case 49:
         turnoJugador2();
@@ -506,6 +545,54 @@ void verificarMatriz(Jugador *jugador){
     }
 }
 
+void menuSeleccion1(){
+    limpiarMenu();
+    setearCursor(37,20);
+    cout<<"DESEA CAMBIAR OTRA FICHA?";
+
+    setearCursor(42,21);
+    cout<<"1. SI     2. NO";
+    setearCursor(37, 23);
+    cout<<"SELECCIONE UNA OPCION: ";
+    int leer;
+    do{
+        leer = getch();
+
+    }while(leer<49||leer>50);
+    cout<<leer;
+    if(leer == 49){
+        jugador1->fichas->graficarListaDoble();
+        ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\Juego\\listadoble.png", NULL, NULL, SW_SHOWNORMAL);
+        cambiarFichas(jugador1);
+        menuSeleccion1();
+    }
+
+}
+
+void menuSeleccion2(){
+    limpiarMenu();
+    setearCursor(37,20);
+    cout<<"DESEA CAMBIAR OTRA FICHA?";
+
+    setearCursor(42,21);
+    cout<<"1. SI     2. NO";
+    setearCursor(37, 23);
+    cout<<"SELECCIONE UNA OPCION: ";
+    int leer;
+    do{
+        leer = getch();
+
+    }while(leer<49||leer>50);
+    cout<<leer;
+    if(leer == 49){
+        jugador2->fichas->graficarListaDoble();
+        ShellExecuteA(NULL, "open","C:\\Users\\jose_\\OneDrive\\Escritorio\\Juego\\listadoble.png", NULL, NULL, SW_SHOWNORMAL);
+        cambiarFichas(jugador2);
+        menuSeleccion2();
+    }
+
+}
+
 void retornarFichas(Jugador *jugador){
     NodoListaSimple *temp = fichasUsadas->first;
     while (temp !=NULL) {
@@ -543,18 +630,18 @@ Ficha *seleccionarFicha(){
             fichas->removeSpecific(buscar);
             return temp;
         }else{
-            setearCursor(40,19);
+            setearCursor(40,22);
             cout<<"NO SE ENCONTRO LA FICHA";
-            Sleep(10);
-            limpiarEleccion(40,18);
+            Sleep(450);
+            limpiarEleccion(40,21);
             return seleccionarFicha();
         }
     }else{
 
-        setearCursor(40,19);
+        setearCursor(40,22);
         cout<<"NO SE ENCONTRO LA FICHA";
-        Sleep(10);
-        limpiarEleccion(40,18);
+        Sleep(450);
+        limpiarEleccion(40,22);
         return seleccionarFicha();
     }
 }

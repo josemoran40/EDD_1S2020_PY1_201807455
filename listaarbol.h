@@ -3,7 +3,6 @@
 
 
 #include <iostream>
-#include <nodoarbol.h>
 #include <fstream>
 #include <listadoble.h>
 using namespace std;

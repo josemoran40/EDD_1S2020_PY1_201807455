@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <fstream>
-#include "nodoarbol.h"
 #include "cola.h"
 
 using namespace std;

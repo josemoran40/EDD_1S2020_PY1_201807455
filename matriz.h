@@ -427,6 +427,40 @@ public:
         }
 
 
+        bool existeX(int x, int y){
+            NodoCabezera *aux = cabecera;
+            while(aux!=NULL){
+                NodoCentral *temp = aux->data;
+                if(aux->valor ==  x){
+                    while(temp!=NULL){
+                        if(temp->pos  == y){
+                            return true;
+                        }
+                        temp = temp->abajo;
+                    }
+                }
+                aux = aux->derecha;
+            }
+            return false;
+        }
+
+        bool existeY(int x, int y){
+            NodoLateral *aux = lateral;
+            while(aux!=NULL){
+                NodoCentral *temp = aux->data;
+                if(aux->valor ==  y){
+                    while(temp!=NULL){
+                        if(temp->pos  == x){
+                            return true;
+                        }
+                        temp = temp->derecha;
+                    }
+                }
+                aux = aux->abajo;
+            }
+            return false;
+        }
+
         int verificarX(CircularDiccionario *diccionario){
             NodoCabezera *aux = cabecera;
             int punteo = 0;
